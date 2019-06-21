@@ -1,0 +1,114 @@
+%% 
+clear 
+clc 
+
+%% Parameters  
+beta1 = 3e-8;
+phi = 0.33;
+rho = 0.2;
+delta_I = 0.5;
+s = 1;
+beta2 = 20;
+kappa = 0;
+q = 5e-5;
+delta_F = 0.5;
+xi = 0.2;
+p = 210;
+c = 3;
+beta_prime = 0;
+g = 0;
+
+% <--------antibody--------->
+m1 = 1e-4;
+m2 = 1e-2;
+m3 = 12000;
+r = 0.2;
+mu_prime = 0.2;
+mu = 0.03;
+
+%% Parameters 2 
+%{
+beta1 = 5e-7;
+phi = 0.14;
+rho = 0.05;
+delta_I = 3;
+s = 1;
+beta2 = 2;
+kappa = 0;
+q = 1e-6;
+delta_F = 2;
+xi = 0.1;
+p = 0.35;
+c = 15;
+%}
+%% Time setting 
+
+start_time = 0;
+end_time = 7;
+number_of_report_time = (end_time - start_time) * 24 + 1;
+report_time = linspace(start_time, end_time, number_of_report_time);
+len = length(report_time);
+
+
+%% variable vectors 
+
+T = zeros(1,len);
+L = zeros(1,len);
+I = zeros(1,len);
+F = zeros(1,len);
+R = zeros(1,len);
+V = zeros(1,len);
+B = zeros(1,len);
+A = zeros(1,len);
+
+T0 = 7e+7;
+L0 = 0;
+I0 = 0;
+F0 = 0;
+R0 = 0;
+V0 = 1e+4;
+B0 = 0;
+A0 = 0;
+
+T(1) = T0;
+V(1) = V0;
+
+
+init = [T0,L0,I0,F0,R0,V0,B0,A0]';
+
+%% odeset 
+
+options = odeset('RelTol',1e-3, 'AbsTol', 1e-6);
+
+%% ode15s
+
+[~,Y] = ode15s(@laten, report_time, init, options, beta1, beta2, phi,rho, delta_I, s, kappa,q,delta_F,xi,p,c,beta_prime,...
+                                                        m1,m2,m3,r,mu_prime,mu,g);
+
+figure(1)
+semilogy(report_time,Y(:,6)) % viral load
+ylabel({'Viral load'})
+xlabel({'Time post infection', '(days)'})
+
+figure(2)
+plot(report_time,Y(:,3))
+hold on 
+plot(report_time,Y(:,2),'k')
+ylabel({'Infected cells & latent cells'})
+xlabel({'Time post infection', '(days)'})
+
+figure(3)
+plot(report_time, Y(:,1),'k')
+hold on 
+plot(report_time, Y(:,5))
+plot(report_time, Y(:,5) + Y(:,1))
+ylabel({'Target cells & Resistant cells'})
+xlabel({'Time post infection', '(days)'})
+
+figure(4)
+plot(report_time, Y(:,4),'k')
+ 
+ylabel({'Interferons'})
+xlabel({'Time post infection', '(days)'})
+
+
